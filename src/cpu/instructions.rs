@@ -1,3 +1,5 @@
+use crate::cpu::instructions;
+
 pub enum Instruction {
     ADD(ArithmaticTarget), // A = A + target
     ADDHL(ArithmaticTarget), // A = A + target, hl <- target register
@@ -29,6 +31,28 @@ pub enum Instruction {
     SLA(ArithmaticTarget), // arithmatic shift a specific register left by 1
     SWAP(ArithmaticTarget), // switch upper and lower nibbles of a specific register
 }
+impl Instruction {
+    pub fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {
+        if prefixed {
+            Instruction::from_byte_prefixed(byte)
+        } else {
+            Instruction::from_byte_not_prefixed(byte)
+        }
+    }
+
+    pub fn from_byte_prefixed(byte: u8) -> Option<Instruction> {
+        match byte {
+            0x00 => Some(Instruction::RLC(ArithmaticTarget::B)),
+        }
+    }
+
+    pub fn from_byte_not_prefixed(byte: u8) -> Option<Instruction> {
+        match byte {
+            0x02 => Some(Instruction::ADD(ArithmaticTarget::A)),
+            // TODO to implement other opcodes
+        }
+    }
+}
 
 pub enum ArithmaticTarget {
     A,
@@ -39,4 +63,11 @@ pub enum ArithmaticTarget {
     F,
     H,
     L,
+}
+
+pub enum ArithmaticTarget16 {
+    AF,
+    BC,
+    DE,
+    HL,
 }

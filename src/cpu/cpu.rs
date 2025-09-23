@@ -1,10 +1,13 @@
+use crate::cpu::instructions;
+
 use super::registers::{ Registers };
 use super::instructions::{ Instruction, ArithmaticTarget };
+use super::membus::MemoryBus;
 
 pub struct CPU {
     pub registers: Registers,
     pub pc: u16,
-    // pub bus: MemoryBus,
+    pub bus: MemoryBus,
 }
 
 // if result is zero, zero flag is true
@@ -13,6 +16,32 @@ pub struct CPU {
 // half carry is only set to true if there is overflow from the lower bits to the upper bits
 
 impl CPU {
+    pub fn step(&mut self) {
+        let mut instruction_byte = self.bus.read_byte(self.pc);
+        let prefixed = instruction_byte == 0xcb;
+
+        if prefixed {
+            instruction_byte = self.bus.read_byte(self.pc + 1);
+        }
+
+        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte) {
+            self.execute(instruction);
+        } else {
+            let description = format!(
+                "0x{}{:x}",
+                if prefixed {
+                    "cb"
+                } else {
+                    ""
+                },
+                instruction_byte
+            );
+            panic!("Unkown instruction found for: {}", description)
+        };
+
+        self.pc = next_pc;
+    }
+
     pub fn execute(&mut self, instruction: Instruction) {
         match instruction {
             Instruction::ADD(target) => {
@@ -21,41 +50,49 @@ impl CPU {
                         let value = self.registers.a;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::B => {
                         let value = self.registers.b;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::C => {
                         let value = self.registers.c;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::D => {
                         let value = self.registers.d;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::E => {
                         let value = self.registers.e;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::F => {
                         let value = u8::from(self.registers.f);
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::H => {
                         let value = self.registers.e;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::L => {
                         let value = self.registers.l;
                         let new_value = self.add(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                 }
             }
@@ -65,41 +102,49 @@ impl CPU {
                         let value = self.registers.a;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::B => {
                         let value = self.registers.b;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::C => {
                         let value = self.registers.c;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::D => {
                         let value = self.registers.d;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::E => {
                         let value = self.registers.e;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::F => {
                         let value = u8::from(self.registers.f);
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::H => {
                         let value = self.registers.h;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                     ArithmaticTarget::L => {
                         let value = self.registers.l;
                         let new_value = self.sub(value);
                         self.registers.a = new_value;
+                        self.pc.wrapping_add(1);
                     }
                 }
             }
