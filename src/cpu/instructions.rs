@@ -1,5 +1,3 @@
-use crate::cpu::instructions;
-
 pub enum Instruction {
     ADD(ArithmaticTarget), // A = A + target
     ADDHL(ArithmaticTarget), // A = A + target, hl <- target register
@@ -30,6 +28,12 @@ pub enum Instruction {
     SRA(ArithmaticTarget), // arithmatic shift a specific register right by 1
     SLA(ArithmaticTarget), // arithmatic shift a specific register left by 1
     SWAP(ArithmaticTarget), // switch upper and lower nibbles of a specific register
+    JP(Jump), // Jump instruction
+    LD(LoadType), // Load
+    CALL(Jump),
+    RET(Jump), // return
+    NOP(), // no operation
+    HALT(),
 }
 impl Instruction {
     pub fn from_byte(byte: u8, prefixed: bool) -> Option<Instruction> {
@@ -43,13 +47,14 @@ impl Instruction {
     pub fn from_byte_prefixed(byte: u8) -> Option<Instruction> {
         match byte {
             0x00 => Some(Instruction::RLC(ArithmaticTarget::B)),
+            // other opcodes
         }
     }
 
     pub fn from_byte_not_prefixed(byte: u8) -> Option<Instruction> {
         match byte {
             0x02 => Some(Instruction::ADD(ArithmaticTarget::A)),
-            // TODO to implement other opcodes
+            // other opcodes
         }
     }
 }
@@ -70,4 +75,39 @@ pub enum ArithmaticTarget16 {
     BC,
     DE,
     HL,
+}
+
+pub enum Jump {
+    NotZero,
+    Zero,
+    NotCarry,
+    Carry,
+    Always,
+}
+
+pub enum LoadByteTarget {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    HLI,
+}
+
+pub enum LoadByteSource {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    D8,
+    HLI,
+}
+
+pub enum LoadType {
+    Byte(LoadByteTarget, LoadByteSource),
 }
